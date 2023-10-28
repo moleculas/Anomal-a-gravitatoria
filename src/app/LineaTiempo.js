@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Timeline,
     TimelineConnector,
@@ -14,6 +14,7 @@ import {
     Paper
 } from '@mui/material/';
 import shuffleLetters from 'shuffle-letters';
+import useDynamicRefs from 'use-dynamic-refs';
 
 //importación acciones
 import useWindowHeight from './useWindowHeight';
@@ -41,16 +42,19 @@ function LineaTiempo(props) {
     };
     const [itemsTimeline, setItemsTimeline] = useState(null);
     const [item2, setItem2] = useState(null);
+    const [getRef, setRef] = useDynamicRefs();
+    const [speaking, setSpeaking] = useState({ estado: false, parrafo: null, verso: null, index: null });
 
     //useEffect
 
     useEffect(() => {
         if (!text) {
             setItemsTimeline(null);
-        } else {            
+        } else {
+
             setTimeout(() => {
                 setItemsTimeline(text);
-            }, 350);            
+            }, 350);
         };
     }, [text]);
 
@@ -89,7 +93,7 @@ function LineaTiempo(props) {
             controls.set("initial");
             shuffleLetters(document.querySelector('h2'), {
                 iterations: 12,
-                fps: 60,                
+                fps: 60,
             });
             setTransferTeclaPresionada(null);
         };
@@ -97,6 +101,20 @@ function LineaTiempo(props) {
             setTransferTeclaPresionada(null);
         };
     }, [transferTeclaPresionada]);
+
+    useEffect(() => {
+        if (speaking.estado) {
+            const parrafo = getRef(speaking.ref);
+            parrafo.current.style.backgroundColor = 'rgba(255,255,255,0.10)';
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(speaking.verso);
+            utterance.rate = 0.75;
+            synth.speak(utterance);
+            utterance.onend = function () {
+                setSpeaking({ estado: false, ref: null, verso: null, index: null });
+            };
+        };
+    }, [speaking]);
 
     const generarStringAlfanumerico = () => {
         const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -108,6 +126,31 @@ function LineaTiempo(props) {
         return resultado;
     };
 
+    const handleClickBox = (index) => {
+        const estrofa = itemsTimeline[index].split('\n');
+        const numVerso = Math.floor(Math.random() * estrofa.length);
+        const verso = estrofa[numVerso];
+        setSpeaking({ estado: true, ref: `ref-${numVerso}-${index}`, verso, index });
+    };
+
+    const gestionaEstrofa = (item, indexEstrofa) => {
+        const estrofa = item.split('\n');
+        const resultado = estrofa.map((verso, index) => {
+            return (
+                <Typography
+                    key={`verso-${index}`}
+                    variant="body2"
+                    className="text-16"
+                    sx={{ color: !speaking.estado ? "#F5F5F5 !important" : "#F5F5F5" }}
+                    ref={setRef(`ref-${index}-${indexEstrofa}`)}
+                >
+                    {verso}
+                </Typography>
+            )
+        });
+        return resultado;
+    };
+
     const TimelineComp = () => (
         <Timeline
             position="right"
@@ -115,6 +158,7 @@ function LineaTiempo(props) {
                 '& .MuiTimelineItem-root:before': {
                     display: 'none',
                 },
+                pointerEvents: !speaking.estado ? "auto" : "none"
             }}
         >
             {itemsTimeline.map((item, index) => {
@@ -122,25 +166,28 @@ function LineaTiempo(props) {
                 return (
                     <TimelineItem key={`nodo-${index}`}>
                         <TimelineSeparator>
-                            <TimelineDot                              
-                                className="bg-[#161616] w-32 h-32 p-0 mt-0 flex items-center justify-center"
+                            <TimelineDot
+                                className="w-32 h-32 p-0 mt-0 flex items-center justify-center"
+                                sx={{
+                                    backgroundColor: !speaking.estado ? "#161616" : speaking.index === index ? "#F5F5F5" : "#161616",
+                                    color: !speaking.estado ? "#F5F5F5" : speaking.index === index ? "#161616" : "#F5F5F5"
+                                }}
                             >
                                 {index + 1}
                             </TimelineDot>
                             {!last && <TimelineConnector />}
                         </TimelineSeparator>
-                        <TimelineContent className="flex flex-col items-start pt-0 pb-48 text-[#F5F5F5]">
-                            <Typography className="text-sm">item.descripción</Typography>
+                        <TimelineContent className="flex flex-col items-start pt-0 pb-48">
+                            <Typography className="text-sm text-[#F5F5F5]">item.descripción</Typography>
                             <Box
-                                className="mt-16 py-16 pl-20 rounded-lg border border-[rgba(255,255,255,0.25)] w-full"
+                                className="mt-16 py-16 pl-20 rounded-lg border border-[rgba(255,255,255,0.25)] w-full hover:cursor-pointer"
                                 sx={{
                                     backgroundColor: "rgba(0, 0, 0, 0.2)"
                                 }}
+                                onClick={() => !speaking.estado && handleClickBox(index)}
                             >
                                 <div className="flex flex-col mt-8 md:mt-4 text-md leading-5">
-                                    <Typography component="div" variant="body2" className="whitespace-pre-line text-16">
-                                        {item}
-                                    </Typography>
+                                    {gestionaEstrofa(item, index)}
                                 </div>
                             </Box>
                         </TimelineContent>

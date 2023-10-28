@@ -228,27 +228,6 @@ function Componente(props) {
         };
     }, [isLoading]);
 
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement) {
-                console.log('FullScreen Content');
-            } else {
-                setTimeout(() => {
-                    setIsLoading(true);
-                    setIsFullscreen(false);
-                }, 50);
-            };
-        };
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-        };
-    }, []);
-
     //funciones   
 
     const teclaPresionada1 = () => {
@@ -360,7 +339,7 @@ function Componente(props) {
                 {overlayVisible && (
                     <video className="w-full h-full object-cover absolute top-0 left-0 z-1" src={videoOv} autoPlay loop muted style={{ mixBlendMode: mixBlend[mezcla], opacity: 0.5 }} />
                 )}
-                <div className="absolute w-full h-full top-0 left-0 z-10">                   
+                <div className="absolute w-full h-full top-0 left-0 z-10">
                     {!isMobile && (
                         <div className="fixed bottom-0 left-0 pb-16 pl-16">
                             <IconButton

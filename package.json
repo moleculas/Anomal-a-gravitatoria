@@ -38,6 +38,7 @@
         "styled-components": "5.3.11",
         "stylis": "4.3.0",
         "typed.js": "^2.0.16",
+        "use-dynamic-refs": "^1.0.0",
         "web-vitals": "3.3.2"
     },
     "peerDependencies": {
