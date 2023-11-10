@@ -43,7 +43,6 @@ function Componente(props) {
         videosBg,
         videosOv,
         miAudio,
-        duracion,
         poster
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
@@ -56,12 +55,14 @@ function Componente(props) {
     const [overlayVisible, setOverlayVisible] = useState(false);
     const [teclaPresionada, setTeclaPresionada] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [text, setText] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); 4
     const [transferTeclaPresionada, setTransferTeclaPresionada] = useState(null);
     const [cambios, setCambios] = useState({ producto: 0, dinamico: 0 });
     const [reset, setReset] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const [poema, setPoema] = useState({ titulo: "", versos: null, partes: null, activo: null });
+    const [cambioParte, setCambioParte] = useState(null);
+    const [contadorInactividad, setContadorInactividad] = useState({ temporizador: 0, tiempoBase: 0 });
 
     //useEffect
 
@@ -98,7 +99,11 @@ function Componente(props) {
                 .catch(() => {
                     console.error('Error cargando videos o audio');
                 });
-            setText(textOriginal);
+            setPoema({ titulo: textOriginal[0].titulo, versos: textOriginal[0].versos, partes: textOriginal.length, activo: 1 });
+            setContadorInactividad(prevContador => ({
+                ...prevContador,
+                tiempoBase: baseTime + randomAdditionalTime()
+            }));
         };
     }, [videosBg, videosOv, miAudio, textOriginal]);
 
@@ -111,10 +116,6 @@ function Componente(props) {
     useEffect(() => {
         if (isLoading) return;
         let intervalId = null;
-        const randomAdditionalTime = () => {
-            const additionalTimeOptions = [2, 10, 15, 20, 25, 30];
-            return additionalTimeOptions[Math.floor(Math.random() * additionalTimeOptions.length)];
-        };
         const modificarTexto = (registro) => {
             registro = registro.charAt(0).toUpperCase() + registro.slice(1);
             const palabras = registro.split(' ');
@@ -126,14 +127,14 @@ function Componente(props) {
             return registro;
         };
         const intervalFunction = () => {
-            if (textOriginal.length >= 2) {
-                let index1 = Math.floor(Math.random() * textOriginal.length);
-                let index2 = Math.floor(Math.random() * textOriginal.length);
+            if (poema.versos.length >= 2) {
+                let index1 = Math.floor(Math.random() * poema.versos.length);
+                let index2 = Math.floor(Math.random() * poema.versos.length);
                 while (index2 === index1) {
-                    index2 = Math.floor(Math.random() * textOriginal.length);
+                    index2 = Math.floor(Math.random() * poema.versos.length);
                 };
-                const estrofa1 = textOriginal[index1].split('\n');
-                const estrofa2 = textOriginal[index2].split('\n');
+                const estrofa1 = poema.versos[index1].split('\n');
+                const estrofa2 = poema.versos[index2].split('\n');
                 const registro1 = estrofa1[Math.floor(Math.random() * estrofa1.length)];
                 const registro2 = estrofa2[Math.floor(Math.random() * estrofa2.length)];
                 const nuevoArray = [modificarTexto(registro1), modificarTexto(registro2)];
@@ -182,15 +183,12 @@ function Componente(props) {
             if (event.key === "1" && !teclaPresionada) {
                 setTeclaPresionada(true);
                 teclaPresionada1();
+                setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
             };
             if (event.key === "3" && !teclaPresionada) {
                 setTeclaPresionada(true);
                 teclaPresionada3();
-            };
-            if (event.key === "4" && !teclaPresionada) {
-                setTeclaPresionada(true);
-                teclaPresionada4();
-                setTransferTeclaPresionada("4");
+                setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
             };
             if (event.key === "0" && !teclaPresionada) {
                 setIsLoading(true);
@@ -205,9 +203,6 @@ function Componente(props) {
                 teclaLiberada1();
             };
             if (event.key === "3") {
-                setTeclaPresionada(false);
-            };
-            if (event.key === "4") {
                 setTeclaPresionada(false);
             };
         };
@@ -228,9 +223,52 @@ function Componente(props) {
         };
     }, [isLoading]);
 
-    //funciones   
+    useEffect(() => {
+        if (cambioParte) {
+            setPoema({ titulo: textOriginal[cambioParte - 1].titulo, versos: textOriginal[cambioParte - 1].versos, partes: textOriginal.length, activo: cambioParte });
+            setCambioParte(null);
+        };
+    }, [cambioParte]);
+
+    useEffect(() => {
+        const manejarInactividad = () => {
+            setContadorInactividad(prevContador => ({
+                ...prevContador,
+                temporizador: prevContador.temporizador + 1
+            }));
+            if (contadorInactividad.temporizador === contadorInactividad.tiempoBase) {
+                duendeVideo();
+            };
+        };
+        const intervalo = setInterval(manejarInactividad, 1000);
+        return () => {
+            clearInterval(intervalo);
+        };
+    }, [contadorInactividad]);
+
+    //funciones     
+
+    const randomAdditionalTime = () => {
+        const additionalTimeOptions = [2, 10, 15, 20, 25, 30];
+        return additionalTimeOptions[Math.floor(Math.random() * additionalTimeOptions.length)];
+    };
+
+    const duendeVideo = () => {
+        const desvio = Math.floor(Math.random() * 2) + 1;
+        if (desvio === 1) {
+            teclaPresionada3();
+        } else {
+            const randomTime = randomAdditionalTime();
+            teclaPresionada1();
+            setTimeout(() => {
+                teclaLiberada1();
+            }, randomTime * 1000);
+        };
+        setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
+    };
 
     const teclaPresionada1 = () => {
+        if(!videosOv) return;
         let numeroAleatorio;
         do {
             numeroAleatorio = Math.floor(Math.random() * 8) + 1;
@@ -253,6 +291,7 @@ function Componente(props) {
     };
 
     const teclaPresionada3 = () => {
+        if(!videosBg) return;
         let randomVideoIndex;
         do {
             randomVideoIndex = Math.floor(Math.random() * videosBg.length);
@@ -264,30 +303,15 @@ function Componente(props) {
         }));
     };
 
-    const teclaPresionada4 = () => {
-        const shuffle = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
-            };
-            return array;
-        };
-        const arr = shuffle([...text]);
-        setText(arr);
-        setCambios(prevCambios => ({
-            ...prevCambios,
-            producto: prevCambios.producto + 1
-        }));
-    };
-
     const teclaPresionada0 = () => {
         setReset(true);
         setTimeout(() => {
             setTeclaPresionada(false);
         }, 3000);
-        setText(textOriginal);
+        setPoema(prevPoema => ({
+            ...prevPoema,
+            versos: textOriginal[0].versos
+        }));
         setCambios({ producto: 0, dinamico: 0 });
     };
 
@@ -398,13 +422,14 @@ function Componente(props) {
                     </div>
                     <div className="w-full relative h-auto">
                         <LineaTiempo
-                            text={text}
+                            poema={poema}
+                            setPoema={setPoema}
                             titulo={titulo}
                             transferTeclaPresionada={transferTeclaPresionada}
                             setTransferTeclaPresionada={setTransferTeclaPresionada}
                             cambios={cambios}
-                            duracion={duracion}
                             isMobile={isMobile}
+                            setCambioParte={setCambioParte}
                         />
                     </div>
                 </div>

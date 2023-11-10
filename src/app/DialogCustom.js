@@ -72,22 +72,7 @@ export default function DialogCustom(props) {
                   <Typography className="text-14">Cambiar vídeo</Typography>
                 }
               />
-            </ListItem>
-            <ListItem>
-              <ListItemAvatar>
-                <Avatar>
-                  <Typography className="text-16 font-semibold">4</Typography>
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Typography className="text-15 font-semibold">Tecla no. 4</Typography>
-                }
-                secondary={
-                  <Typography className="text-14">Reordenar texto</Typography>
-                }
-              />
-            </ListItem>
+            </ListItem>          
             <ListItem>
               <ListItemAvatar>
                 <Avatar>

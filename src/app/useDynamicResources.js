@@ -7,7 +7,6 @@ export function useDynamicResources(itemValue) {
     const [textOriginal, setTextOriginal] = useState(null);
     const [titulo, setTitulo] = useState("");
     const [subtitulo, setSubtitulo] = useState("");
-    const [duracion, setDuracion] = useState(0);
     const [poster, setPoster] = useState(null);
 
     useEffect(() => {
@@ -19,8 +18,7 @@ export function useDynamicResources(itemValue) {
                 valores = data; 
                 setTitulo(valores.titulo);
                 setSubtitulo(valores.subtitulo);
-                setTextOriginal(valores.textOriginal);
-                setDuracion(valores.duracion);
+                setTextOriginal(valores.textOriginal);                
                 return fetch(`${publicHTML}/assets/contenido/${itemValue}/images/${valores.poster}`);
             })
             .then(response => response.blob())
@@ -71,8 +69,7 @@ export function useDynamicResources(itemValue) {
         textOriginal,
         videosBg,
         videosOv,
-        miAudio,
-        duracion,
+        miAudio,       
         poster
     };
 }
