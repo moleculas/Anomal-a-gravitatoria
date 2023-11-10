@@ -19,13 +19,9 @@ import useDynamicRefs from 'use-dynamic-refs';
 
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 
 //importación acciones
 import useWindowHeight from './useWindowHeight';
-
-//assets
-import miAudio2 from "./audio/audio_junky.mp3";
 
 function LineaTiempo(props) {
     const {
@@ -39,7 +35,6 @@ function LineaTiempo(props) {
         setCambioParte
     } = props;
     const text2Ref = useRef(null);
-    const audio2Ref = useRef(null);
     const windowHeight = useWindowHeight();
     const container = {
         show: {
@@ -54,7 +49,7 @@ function LineaTiempo(props) {
     const [scope, animate] = useAnimate();
     const [sliderValue, setSliderValue] = useState(null);
     const [parrafoAumentado, setParrafoAumentado] = useState(null);
-    const [visibleScroller, setVisibleScroller] = useState(true);
+    const [visibleScroller, setVisibleScroller] = useState(false);
 
     //useEffect
 
@@ -63,7 +58,6 @@ function LineaTiempo(props) {
             setItemsTimeline(null);
         } else {
             setTimeout(() => {
-                setVisibleScroller(true);
                 setItemsTimeline(poema.versos);
             }, 150);
         };
@@ -79,8 +73,8 @@ function LineaTiempo(props) {
             },
         });
         if (scope.current) {
-            if (scope.current.scrollHeight <= scope.current.clientHeight) {
-                setVisibleScroller(false);
+            if (scope.current.scrollHeight > scope.current.clientHeight) {
+                setVisibleScroller(true);
             };
         };
         setSliderValue(poema.versos.length);
@@ -180,15 +174,14 @@ function LineaTiempo(props) {
             })}
         </Timeline>
     );
-    
+
     const Botonera = ({ poema, cambioParte }) => {
         const iconButtons = [];
         for (let i = 1; i <= poema.partes; i++) {
             iconButtons.push(
                 <IconButton
                     key={i}
-                    //onClick={() => cambioParte(i)}
-                    onMouseDown={() => cambioParte(i)}
+                    onMouseUp={() => cambioParte(i)}
                     sx={{
                         backgroundColor: '#F5F5F5',
                         '&:hover': {
@@ -214,6 +207,7 @@ function LineaTiempo(props) {
     };
 
     const cambioParte = (parte) => {
+        setVisibleScroller(false);
         setPoema(null);
         setCambioParte(parte);
     };
@@ -290,10 +284,7 @@ function LineaTiempo(props) {
                                             fontSize: 12,
                                             fontFamily: 'Mukta',
                                             marginRight: '10px',
-                                            background: "unset",
-                                            // paddingX: "20px",
-                                            // backgroundColor: "lightgoldenrodyellow",
-                                            // color: "#161616"
+                                            background: "unset"
                                         },
                                     }}
                                     onChangeCommitted={handleSliderReleased}
@@ -316,7 +307,6 @@ function LineaTiempo(props) {
                         </Stack>
                     )}
                 </motion.div >
-                <audio ref={audio2Ref} src={miAudio2} loop />
             </>
         )
     );
