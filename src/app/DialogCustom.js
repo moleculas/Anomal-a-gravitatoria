@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogTitle,
@@ -19,7 +19,8 @@ const Transition = forwardRef(function Transition(props, ref) {
 export default function DialogCustom(props) {
   const {
     openDialog,
-    setOpenDialog
+    setOpenDialog,
+    traduccions
   } = props;
 
   //funciones
@@ -34,11 +35,11 @@ export default function DialogCustom(props) {
         open={openDialog}
         TransitionComponent={Transition}
         keepMounted
-        onClose={handleCloseDialog}     
+        onClose={handleCloseDialog}
       >
         <DialogTitle>
           <Typography className="text-2xl tracking-tight leading-tight ">
-            Control teclado numérico
+            {traduccions[0]}
           </Typography>
         </DialogTitle>
         <DialogContent>
@@ -51,10 +52,10 @@ export default function DialogCustom(props) {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Typography className="text-15 font-semibold">Tecla no. 1</Typography>
+                  <Typography className="text-15 font-semibold">{traduccions[1]}</Typography>
                 }
                 secondary={
-                  <Typography className="text-14">Sobreponer capa de vídeo</Typography>
+                  <Typography className="text-14">{traduccions[4]}</Typography>
                 }
               />
             </ListItem>
@@ -66,13 +67,13 @@ export default function DialogCustom(props) {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Typography className="text-15 font-semibold">Tecla no. 3</Typography>
+                  <Typography className="text-15 font-semibold">{traduccions[2]}</Typography>
                 }
                 secondary={
-                  <Typography className="text-14">Cambiar vídeo</Typography>
+                  <Typography className="text-14">{traduccions[5]}</Typography>
                 }
               />
-            </ListItem>          
+            </ListItem>
             <ListItem>
               <ListItemAvatar>
                 <Avatar>
@@ -81,15 +82,15 @@ export default function DialogCustom(props) {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Typography className="text-15 font-semibold">Tecla no. 0</Typography>
+                  <Typography className="text-15 font-semibold">{traduccions[3]}</Typography>
                 }
                 secondary={
-                  <Typography className="text-14">Resetear proyecto</Typography>
+                  <Typography className="text-14">{traduccions[6]}</Typography>
                 }
               />
             </ListItem>
           </List>
-        </DialogContent>     
+        </DialogContent>
       </Dialog>
     </div>
   );

@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import {
     IconButton,
     Typography,
-    Box
+    Box,
+    CircularProgress
 } from '@mui/material';
 import {
     VolumeUp,
@@ -19,6 +20,9 @@ import DialogCustom from './DialogCustom';
 
 //importaciones acciones
 import { useDynamicResources } from './useDynamicResources';
+
+//constantes
+import { TRADUCCIONS } from './constantes';
 
 const mixBlend = {
     1: "screen",
@@ -43,7 +47,8 @@ function Componente(props) {
         videosBg,
         videosOv,
         miAudio,
-        poster
+        poster,
+        lang
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
     const isMobile = md.mobile();
@@ -63,6 +68,7 @@ function Componente(props) {
     const [poema, setPoema] = useState({ titulo: "", versos: null, partes: null, activo: null });
     const [cambioParte, setCambioParte] = useState(null);
     const [contadorInactividad, setContadorInactividad] = useState({ temporizador: 0, tiempoBase: 0 });
+    const [loadingPercentage, setLoadingPercentage] = useState(0);
 
     //useEffect
 
@@ -92,12 +98,23 @@ function Componente(props) {
                     reject();
                 });
             });
-            Promise.all([...loadHandlers, audioLoadPromise])
+            const totalLoadPromises = [...loadHandlers, audioLoadPromise];
+            const totalPromisesCount = totalLoadPromises.length;
+            let loadedPromisesCount = 0;
+            totalLoadPromises.forEach(promise => {
+                promise
+                    .then(() => {
+                        loadedPromisesCount++;
+                        const percentage = (loadedPromisesCount / totalPromisesCount) * 100;
+                        setLoadingPercentage(percentage);
+                    })
+                    .catch(() => {
+                        console.error('Error cargando videos o audio');
+                    });
+            });
+            Promise.all(totalLoadPromises)
                 .then(() => {
-                    setIsLoading(false);
-                })
-                .catch(() => {
-                    console.error('Error cargando videos o audio');
+                    setLoadingPercentage(100);
                 });
             setPoema({ titulo: textOriginal[0].titulo, versos: textOriginal[0].versos, partes: textOriginal.length, activo: 1 });
             setContadorInactividad(prevContador => ({
@@ -106,6 +123,15 @@ function Componente(props) {
             }));
         };
     }, [videosBg, videosOv, miAudio, textOriginal]);
+
+    useEffect(() => {
+        if (loadingPercentage === 100) {
+            const timer = setTimeout(() => {
+                setIsLoading(false)
+            }, 200);
+            return () => clearTimeout(timer);
+        };
+    }, [loadingPercentage]);
 
     useEffect(() => {
         if (isLoading) return;
@@ -268,7 +294,7 @@ function Componente(props) {
     };
 
     const teclaPresionada1 = () => {
-        if(!videosOv) return;
+        if (!videosOv) return;
         let numeroAleatorio;
         do {
             numeroAleatorio = Math.floor(Math.random() * 8) + 1;
@@ -291,7 +317,7 @@ function Componente(props) {
     };
 
     const teclaPresionada3 = () => {
-        if(!videosBg) return;
+        if (!videosBg) return;
         let randomVideoIndex;
         do {
             randomVideoIndex = Math.floor(Math.random() * videosBg.length);
@@ -334,18 +360,18 @@ function Componente(props) {
             <>
                 <img className="w-full h-full object-cover absolute top-0 left-0 z-0" src={poster} />
                 <div className="flex flex-1 flex-col items-center justify-center p-24">
-                    <Box
-                        id="spinner"
-                        sx={{
-                            '& > div': {
-                                backgroundColor: 'palette.secondary.main',
-                            },
-                        }}
-                    >
-                        <div className="bounce1" />
-                        <div className="bounce2" />
-                        <div className="bounce3" />
+                    <Box className="relative inline-flex z-50">
+                        <CircularProgress variant="determinate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentage} size="60px" />
+                        <Box className="absolute inset-0 flex items-center justify-center">
+                            <Typography variant="caption" component="div" className="text-sm text-[#F5F5F5]">
+                                {`${Math.round(loadingPercentage)}%`}
+                            </Typography>
+                        </Box>
                     </Box>
+                    {/* <div className="bounce1" />
+                        <div className="bounce2" />
+                        <div className="bounce3" /> */}
+
                 </div>
             </>
         )
@@ -430,6 +456,7 @@ function Componente(props) {
                             cambios={cambios}
                             isMobile={isMobile}
                             setCambioParte={setCambioParte}
+                            traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
                         />
                     </div>
                 </div>
@@ -438,6 +465,7 @@ function Componente(props) {
             <DialogCustom
                 openDialog={openDialog}
                 setOpenDialog={setOpenDialog}
+                traduccions={Array.from({ length: 7 }, (_, index) => TRADUCCIONS[index][lang])}
             />
         </>
 

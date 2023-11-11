@@ -32,7 +32,8 @@ function LineaTiempo(props) {
         setTransferTeclaPresionada,
         cambios,
         isMobile,
-        setCambioParte
+        setCambioParte,
+        traduccions
     } = props;
     const text2Ref = useRef(null);
     const windowHeight = useWindowHeight();
@@ -50,6 +51,7 @@ function LineaTiempo(props) {
     const [sliderValue, setSliderValue] = useState(null);
     const [parrafoAumentado, setParrafoAumentado] = useState(null);
     const [visibleScroller, setVisibleScroller] = useState(false);
+    const [valueLabelDisplayState, setValueLabelDisplayState] = useState("auto");
 
     //useEffect
 
@@ -103,6 +105,16 @@ function LineaTiempo(props) {
             parrafo.current.style.width = "90%";
         };
     }, [parrafoAumentado]);
+
+    useEffect(() => {
+        if (!itemsTimeline || !sliderValue || !visibleScroller) return;
+        window.addEventListener('wheel', handleMouseWheel);
+        return () => {
+            window.removeEventListener('wheel', handleMouseWheel);
+        };
+    }, [itemsTimeline, sliderValue, visibleScroller]);
+
+    //funciones
 
     const generarStringAlfanumerico = () => {
         const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -210,6 +222,7 @@ function LineaTiempo(props) {
         setVisibleScroller(false);
         setPoema(null);
         setCambioParte(parte);
+        setValueLabelDisplayState("auto");
     };
 
     const valueLabelFormat = (value) => {
@@ -219,16 +232,31 @@ function LineaTiempo(props) {
     const handleSliderChange = (event, newValue) => {
         setParrafoAumentado(`ref-${poema.versos.length - newValue}`);
         setSliderValue(newValue);
-        const numVersos = poema.versos.length;
-        const desplazamiento = (scope.current.scrollHeight - scope.current.clientHeight) * ((numVersos - newValue) / numVersos);
-        const variacionDesplazamiento = newValue === numVersos - (numVersos - 1) ? 250 : newValue === numVersos ? 0 : (250 * ((numVersos - newValue) + 1)) / numVersos;
-        animate(scope.current, { y: -1 * (desplazamiento + variacionDesplazamiento) }, { ease: 'easeOut' });
+        animacion(newValue);
+        setValueLabelDisplayState("on");
     };
 
     const handleSliderReleased = () => {
         if (parrafoAumentado) {
             setParrafoAumentado(null);
         };
+    };
+
+    const handleMouseWheel = (event) => {      
+        const direction = event.deltaY < 0 ? 1 : -1;
+        const newValue = sliderValue + direction;
+        const clampedValue = Math.max(1, Math.min(poema.versos.length, newValue));
+        setParrafoAumentado(`ref-${poema.versos.length - clampedValue}`);
+        setSliderValue(clampedValue);
+        animacion(clampedValue, newValue);
+        setValueLabelDisplayState("on");
+    };
+
+    const animacion = (valor) => {
+        const numVersos = poema.versos.length;
+        const desplazamiento = (scope.current.scrollHeight - scope.current.clientHeight) * ((numVersos - valor) / numVersos);
+        const variacionDesplazamiento = valor === numVersos - (numVersos - 1) ? 250 : valor === numVersos ? 0 : (250 * ((numVersos - valor) + 1)) / numVersos;
+        animate(scope.current, { y: -1 * (desplazamiento + variacionDesplazamiento) }, { ease: 'easeOut' });
     };
 
     if (!poema) {
@@ -247,9 +275,9 @@ function LineaTiempo(props) {
                     <div className="flex flex-col sm:flex-row mb-24 justify-between">
                         <div>
                             <Typography variant="h2" ref={text2Ref} className="text-24 text-[#F5F5F5] uppercase font-bold">
-                                {`Histórico concepto: [ ${titulo} - ${generarStringAlfanumerico()} ]`}
+                                {`${traduccions[0]}: [ ${titulo} - ${generarStringAlfanumerico()} ]`}
                             </Typography>
-                            <Typography className="mt-2 text-12 text-[#F5F5F5] uppercase font-semibold tracking-widest">{`Secuencia de cambios en producto ${cambios.producto} - dinámico ${cambios.dinamico}`}</Typography>
+                            <Typography className="mt-2 text-12 text-[#F5F5F5] uppercase font-semibold tracking-widest">{`${traduccions[1]} ${cambios.producto} - ${traduccions[2]} ${cambios.dinamico}`}</Typography>
                         </div>
                         {Number(poema.partes) > 1 && (
                             <div className="flex flex-row gap-8">
@@ -270,7 +298,7 @@ function LineaTiempo(props) {
                                 <Slider
                                     orientation="vertical"
                                     valueLabelFormat={valueLabelFormat}
-                                    valueLabelDisplay="auto"
+                                    valueLabelDisplay={valueLabelDisplayState}
                                     min={1}
                                     max={poema.versos.length}
                                     value={sliderValue}
