@@ -346,6 +346,7 @@ function Componente(props) {
     };
 
     const teclaPresionada0 = () => {
+        setCambioParte(1);
         setReset(true);
         setTimeout(() => {
             setTeclaPresionada(false);
