@@ -75,7 +75,7 @@ function Componente(props) {
     //useEffect
 
     useEffect(() => {
-        if (videosBg && videosOv && miAudio && textOriginal && loadingPercentage) {
+        if (videosBg && videosOv && miAudio && textOriginal) {
             const videosToLoad = [...videosBg, ...videosOv].map(videoUrl => {
                 const video = document.createElement('video');
                 video.src = videoUrl;
@@ -105,7 +105,7 @@ function Componente(props) {
             let loadedPromisesCount = 0;
             totalLoadPromises.forEach(promise => {
                 promise
-                    .then(() => {
+                    .then(() => {                       
                         loadedPromisesCount++;
                         const percentage = ((loadedPromisesCount / totalPromisesCount) * 100) / 10;
                         setLoadingPercentageSecundario(percentage);
@@ -124,7 +124,7 @@ function Componente(props) {
                 tiempoBase: baseTime + randomAdditionalTime()
             }));
         };
-    }, [videosBg, videosOv, miAudio, textOriginal, loadingPercentage]);
+    }, [videosBg, videosOv, miAudio, textOriginal]);
 
     useEffect(() => {
         if (loadingPercentage + loadingPercentageSecundario === 100) {
@@ -377,10 +377,10 @@ function Componente(props) {
                 <img className="w-full h-full object-cover absolute top-0 left-0 z-0" src={poster} />
                 <div className="flex flex-1 flex-col items-center justify-center p-24">
                     <Box className="relative inline-flex z-50">
-                        <CircularProgress variant="determinate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentageSecundario + loadingPercentage} size="60px" />
+                        <CircularProgress variant="indeterminate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentage + loadingPercentageSecundario } size="60px" />
                         <Box className="absolute inset-0 flex items-center justify-center">
                             <Typography variant="caption" component="div" className="text-sm text-[#F5F5F5]">
-                                {`${Math.round(loadingPercentageSecundario + loadingPercentage)}%`}
+                                {`${Math.round(loadingPercentage + loadingPercentageSecundario)}%`}
                             </Typography>
                         </Box>
                     </Box>
