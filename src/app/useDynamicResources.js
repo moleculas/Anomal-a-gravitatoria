@@ -9,10 +9,29 @@ export function useDynamicResources(itemValue) {
     const [subtitulo, setSubtitulo] = useState("");
     const [poster, setPoster] = useState(null);
     const [lang, setLang] = useState(null);
+    const [loadingPercentage, setLoadingPercentage] = useState(0);
+    
+    //useEffect
 
     useEffect(() => {
         let valores;
         const publicHTML = process.env.PUBLIC_URL;
+        const loadResource = async (url, type) => {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const resourceUrl = URL.createObjectURL(blob);        
+                if (type === 'video') {
+                    setLoadingPercentage(prevPercentage => prevPercentage + 10);
+                } else if (type === 'audio') {
+                    setLoadingPercentage(prevPercentage => prevPercentage + 20);
+                };        
+                return resourceUrl;
+            } catch (error) {
+                console.error(`Error al importar el ${type}:`, error);
+                return null;
+            };
+        };
         fetch(`${publicHTML}/assets/contenido/${itemValue}/json/valores.json`)
             .then(response => response.json())
             .then(data => {
@@ -21,51 +40,37 @@ export function useDynamicResources(itemValue) {
                 setSubtitulo(valores.subtitulo);
                 setTextOriginal(valores.textOriginal);         
                 setLang(valores.lang);            
-                return fetch(`${publicHTML}/assets/contenido/${itemValue}/images/${valores.poster}`);
+                return loadResource(`${publicHTML}/assets/contenido/${itemValue}/images/${valores.poster}`, 'image');
             })
-            .then(response => response.blob())
-            .then(blob => URL.createObjectURL(blob))
             .then(posterUrl => {
                 setPoster(posterUrl);
                 const videoPromises = valores.videos.map(video => {
-                    return fetch(`${publicHTML}/assets/contenido/${itemValue}/video/${video}`)
-                        .then(response => response.blob())
-                        .then(blob => URL.createObjectURL(blob))
-                        .catch(error => {
-                            console.error('Error al importar el video:', error);
-                            return null;
-                        });
+                    return loadResource(`${publicHTML}/assets/contenido/${itemValue}/video/${video}`, 'video');
                 });
                 return Promise.all(videoPromises);
             })
             .then(videoUrls => {
                 setVideosBg(videoUrls);
                 const overlayPromises = valores.overlays.map(overlay => {
-                    return fetch(`${publicHTML}/assets/contenido/${itemValue}/video/${overlay}`)
-                        .then(response => response.blob())
-                        .then(blob => URL.createObjectURL(blob))
-                        .catch(error => {
-                            console.error('Error al importar el video:', error);
-                            return null;
-                        });
+                    return loadResource(`${publicHTML}/assets/contenido/${itemValue}/video/${overlay}`, 'video');
                 });
                 return Promise.all(overlayPromises);
             })
             .then(videoUrls => {
                 setVideosOv(videoUrls);
-                return fetch(`${publicHTML}/assets/contenido/${itemValue}/audio/${valores.miAudio}`);
+                return loadResource(`${publicHTML}/assets/contenido/${itemValue}/audio/${valores.miAudio}`, 'audio');
             })
-            .then(response => response.blob())
-            .then(blob => URL.createObjectURL(blob))
             .then(audioUrl => {
                 setMiAudio(audioUrl);
+                setLoadingPercentage(90); 
             })
             .catch(error => {
                 console.error('Error al importar los datos:', error);
             });
     }, [itemValue]);
 
-    return {
+    return {       
+        loadingPercentage,
         titulo,
         subtitulo,
         textOriginal,

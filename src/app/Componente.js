@@ -41,6 +41,7 @@ function Componente(props) {
     const params = new URLSearchParams(location.search);
     const itemValue = params.get('item');
     const {
+        loadingPercentage,
         titulo,
         subtitulo,
         textOriginal,
@@ -68,12 +69,13 @@ function Componente(props) {
     const [poema, setPoema] = useState({ titulo: "", versos: null, partes: null, activo: null });
     const [cambioParte, setCambioParte] = useState(null);
     const [contadorInactividad, setContadorInactividad] = useState({ temporizador: 0, tiempoBase: 0 });
-    const [loadingPercentage, setLoadingPercentage] = useState(0);
+    const [loadingPercentageSecundario, setLoadingPercentageSecundario] = useState(0);
+    const [typedInstance, setTypedInstance] = useState(null);
 
     //useEffect
 
     useEffect(() => {
-        if (videosBg && videosOv && miAudio && textOriginal) {
+        if (videosBg && videosOv && miAudio && textOriginal && loadingPercentage) {
             const videosToLoad = [...videosBg, ...videosOv].map(videoUrl => {
                 const video = document.createElement('video');
                 video.src = videoUrl;
@@ -105,8 +107,8 @@ function Componente(props) {
                 promise
                     .then(() => {
                         loadedPromisesCount++;
-                        const percentage = (loadedPromisesCount / totalPromisesCount) * 100;
-                        setLoadingPercentage(percentage);
+                        const percentage = ((loadedPromisesCount / totalPromisesCount) * 100) / 10;
+                        setLoadingPercentageSecundario(percentage);
                     })
                     .catch(() => {
                         console.error('Error cargando videos o audio');
@@ -114,7 +116,7 @@ function Componente(props) {
             });
             Promise.all(totalLoadPromises)
                 .then(() => {
-                    setLoadingPercentage(100);
+                    setLoadingPercentageSecundario(10);
                 });
             setPoema({ titulo: textOriginal[0].titulo, versos: textOriginal[0].versos, partes: textOriginal.length, activo: 1 });
             setContadorInactividad(prevContador => ({
@@ -122,16 +124,16 @@ function Componente(props) {
                 tiempoBase: baseTime + randomAdditionalTime()
             }));
         };
-    }, [videosBg, videosOv, miAudio, textOriginal]);
+    }, [videosBg, videosOv, miAudio, textOriginal, loadingPercentage]);
 
     useEffect(() => {
-        if (loadingPercentage === 100) {
+        if (loadingPercentage + loadingPercentageSecundario === 100) {
             const timer = setTimeout(() => {
-                setIsLoading(false)
+                setIsLoading(false);
             }, 200);
             return () => clearTimeout(timer);
         };
-    }, [loadingPercentage]);
+    }, [loadingPercentage, loadingPercentageSecundario]);
 
     useEffect(() => {
         if (isLoading) return;
@@ -141,7 +143,7 @@ function Componente(props) {
 
     useEffect(() => {
         if (isLoading) return;
-        let intervalId = null;
+        let intervalId = null;        
         const modificarTexto = (registro) => {
             registro = registro.charAt(0).toUpperCase() + registro.slice(1);
             const palabras = registro.split(' ');
@@ -153,7 +155,7 @@ function Componente(props) {
             return registro;
         };
         const intervalFunction = () => {
-            if (poema.versos.length >= 2) {
+            if (poema?.versos.length >= 2) {
                 let index1 = Math.floor(Math.random() * poema.versos.length);
                 let index2 = Math.floor(Math.random() * poema.versos.length);
                 while (index2 === index1) {
@@ -164,17 +166,21 @@ function Componente(props) {
                 const registro1 = estrofa1[Math.floor(Math.random() * estrofa1.length)];
                 const registro2 = estrofa2[Math.floor(Math.random() * estrofa2.length)];
                 const nuevoArray = [modificarTexto(registro1), modificarTexto(registro2)];
-                const typed = new Typed(textRef.current, {
+                if (typedInstance) {
+                    typedInstance.destroy();
+                };
+                const newTyped = new Typed(textRef.current, {
                     strings: nuevoArray,
                     typeSpeed: 50,
                     cursorChar: registro1,
                 });
+                setTypedInstance(newTyped);
                 setCambios(prevCambios => ({
                     ...prevCambios,
                     dinamico: prevCambios.dinamico + 1
                 }));
                 return () => {
-                    typed.destroy();
+                    newTyped.destroy();
                 };
             };
         };
@@ -185,14 +191,24 @@ function Componente(props) {
                 intervalId = setInterval(intervalFunction, (baseTime + randomAdditionalTime()) * 1000);
             };
         };
+        if (cambioParte) {
+            if (typedInstance) {
+                typedInstance.destroy();
+                setTypedInstance(null);
+            };
+            clearInterval(intervalId);
+        };
         document.addEventListener("visibilitychange", handleVisibilityChange);
         !intervalId && intervalFunction();
         intervalId = setInterval(intervalFunction, (baseTime + randomAdditionalTime()) * 1000);
         return () => {
             clearInterval(intervalId);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
+            if (typedInstance) {
+                typedInstance.destroy();
+            }
         };
-    }, [isLoading]);
+    }, [isLoading, poema, cambioParte]);
 
     useEffect(() => {
         if (reset) {
@@ -361,17 +377,13 @@ function Componente(props) {
                 <img className="w-full h-full object-cover absolute top-0 left-0 z-0" src={poster} />
                 <div className="flex flex-1 flex-col items-center justify-center p-24">
                     <Box className="relative inline-flex z-50">
-                        <CircularProgress variant="determinate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentage} size="60px" />
+                        <CircularProgress variant="determinate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentageSecundario + loadingPercentage} size="60px" />
                         <Box className="absolute inset-0 flex items-center justify-center">
                             <Typography variant="caption" component="div" className="text-sm text-[#F5F5F5]">
-                                {`${Math.round(loadingPercentage)}%`}
+                                {`${Math.round(loadingPercentageSecundario + loadingPercentage)}%`}
                             </Typography>
                         </Box>
                     </Box>
-                    {/* <div className="bounce1" />
-                        <div className="bounce2" />
-                        <div className="bounce3" /> */}
-
                 </div>
             </>
         )
