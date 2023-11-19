@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 
 export function useDynamicResources(itemValue) {
-    const [videosBg, setVideosBg] = useState(null);
-    const [videosOv, setVideosOv] = useState(null);
-    const [miAudio, setMiAudio] = useState(null);
     const [textOriginal, setTextOriginal] = useState(null);
     const [titulo, setTitulo] = useState("");
     const [subtitulo, setSubtitulo] = useState("");
     const [poster, setPoster] = useState(null);
     const [lang, setLang] = useState(null);
     const [loadingPercentage, setLoadingPercentage] = useState(0);
+    const [miAudio, setMiAudio] = useState(null);
 
     //useEffect
 
@@ -25,9 +23,10 @@ export function useDynamicResources(itemValue) {
                 };
                 setTitulo(valores.titulo);
                 setSubtitulo(valores.subtitulo);
-                setTextOriginal(valores.textOriginal);
+                setTextOriginal(valores.textOriginal);    
                 setLang(valores.lang);
-                const proporcionCarga = 90 / (valores.videos.length + valores.overlays.length + 2);                
+                setMiAudio(valores.miAudio);    
+                const proporcionCarga = 90;
                 const fetchBlobAndCreateObjectURL = async (url) => {
                     const response = await fetch(url);
                     const blob = await response.blob();
@@ -35,33 +34,7 @@ export function useDynamicResources(itemValue) {
                 };
                 const posterUrl = await fetchBlobAndCreateObjectURL(`${publicHTML}/assets/contenido/${itemValue}/images/${valores.poster}`);
                 setLoadingPercentage(prevPercentage => prevPercentage + proporcionCarga);
-                setPoster(posterUrl);
-                const videoUrls = await Promise.all(
-                    valores.videos.map(async (video) => {
-                        setLoadingPercentage(prevPercentage => prevPercentage + proporcionCarga);
-                        try {
-                            return await fetchBlobAndCreateObjectURL(`${publicHTML}/assets/contenido/${itemValue}/video/${video}`);
-                        } catch (error) {
-                            console.error('Error al importar el video:', error);
-                            return null;
-                        }
-                    })
-                );
-                setVideosBg(videoUrls);
-                const overlayUrls = await Promise.all(
-                    valores.overlays.map(async (overlay) => {
-                        setLoadingPercentage(prevPercentage => prevPercentage + proporcionCarga);
-                        try {
-                            return await fetchBlobAndCreateObjectURL(`${publicHTML}/assets/contenido/${itemValue}/video/${overlay}`);
-                        } catch (error) {
-                            console.error('Error al importar el video:', error);
-                            return null;
-                        };
-                    })
-                );
-                setVideosOv(overlayUrls);                
-                const audioUrl = await fetchBlobAndCreateObjectURL(`${publicHTML}/assets/contenido/${itemValue}/audio/${valores.miAudio}`);
-                setMiAudio(audioUrl);
+                setPoster(posterUrl); 
                 setLoadingPercentage(90);
             } catch (error) {
                 console.error('Error al importar los datos:', error);
@@ -70,10 +43,7 @@ export function useDynamicResources(itemValue) {
         fetchData();
         return () => {
             isMounted = false;
-            URL.revokeObjectURL(poster);
-            videosBg.forEach((url) => URL.revokeObjectURL(url));
-            videosOv.forEach((url) => URL.revokeObjectURL(url));
-            URL.revokeObjectURL(miAudio);
+            URL.revokeObjectURL(poster);     
         };
     }, [itemValue]);
 
@@ -81,11 +51,9 @@ export function useDynamicResources(itemValue) {
         loadingPercentage,
         titulo,
         subtitulo,
-        textOriginal,
-        videosBg,
-        videosOv,
-        miAudio,
+        textOriginal,  
         poster,
-        lang
+        lang,
+        miAudio
     };
 }

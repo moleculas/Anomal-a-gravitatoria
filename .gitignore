@@ -10,6 +10,7 @@
 # production
 /build
 /public/assets/contenido
+/anulado
 
 # misc
 .DS_Store

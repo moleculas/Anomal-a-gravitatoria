@@ -3,20 +3,20 @@ import {
     IconButton,
     Typography,
     Box,
-    CircularProgress
+    CircularProgress,
+    Divider
 } from '@mui/material';
 import {
     VolumeUp,
-    VolumeOff,
-    QuestionMark
+    VolumeOff
 } from '@mui/icons-material/';
 import Typed from 'typed.js';
 import { useLocation } from 'react-router-dom';
 import MobileDetect from 'mobile-detect';
+import Marquee from "react-fast-marquee";
 
 //carga componentes
 import LineaTiempo from './LineaTiempo';
-import DialogCustom from './DialogCustom';
 
 //importaciones acciones
 import { useDynamicResources } from './useDynamicResources';
@@ -45,86 +45,40 @@ function Componente(props) {
         titulo,
         subtitulo,
         textOriginal,
-        videosBg,
-        videosOv,
-        miAudio,
         poster,
-        lang
+        lang,
+        miAudio
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
     const isMobile = md.mobile();
     const audioRef = useRef(null);
     const textRef = useRef(null);
-    const [mezcla, setMezcla] = useState(null);
-    const [videoBg, setVideoBg] = useState("");
-    const [videoOv, setVideoOv] = useState("");
-    const [overlayVisible, setOverlayVisible] = useState(false);
-    const [teclaPresionada, setTeclaPresionada] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isLoading, setIsLoading] = useState(true); 4
-    const [transferTeclaPresionada, setTransferTeclaPresionada] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [cambios, setCambios] = useState({ producto: 0, dinamico: 0 });
     const [reset, setReset] = useState(false);
-    const [openDialog, setOpenDialog] = useState(false);
     const [poema, setPoema] = useState({ titulo: "", versos: null, partes: null, activo: null });
     const [cambioParte, setCambioParte] = useState(null);
     const [contadorInactividad, setContadorInactividad] = useState({ temporizador: 0, tiempoBase: 0 });
     const [loadingPercentageSecundario, setLoadingPercentageSecundario] = useState(0);
     const [typedInstance, setTypedInstance] = useState(null);
+    const [archillectImage, setArchillectImage] = useState(null);
+    const [marquesina, setMarquesina] = useState("");
 
     //useEffect
 
     useEffect(() => {
-        if (videosBg && videosOv && miAudio && textOriginal) {
-            const videosToLoad = [...videosBg, ...videosOv].map(videoUrl => {
-                const video = document.createElement('video');
-                video.src = videoUrl;
-                return video;
-            });
-            const loadHandlers = videosToLoad.map(video => {
-                return new Promise((resolve, reject) => {
-                    video.addEventListener('loadeddata', () => {
-                        resolve();
-                    });
-                    video.addEventListener('error', () => {
-                        reject();
-                    });
-                });
-            });
-            const audio = new Audio(miAudio);
-            const audioLoadPromise = new Promise((resolve, reject) => {
-                audio.addEventListener('canplaythrough', () => {
-                    resolve();
-                });
-                audio.addEventListener('error', () => {
-                    reject();
-                });
-            });
-            const totalLoadPromises = [...loadHandlers, audioLoadPromise];
-            const totalPromisesCount = totalLoadPromises.length;
-            let loadedPromisesCount = 0;
-            totalLoadPromises.forEach(promise => {
-                promise
-                    .then(() => {                       
-                        loadedPromisesCount++;
-                        const percentage = ((loadedPromisesCount / totalPromisesCount) * 100) / 10;
-                        setLoadingPercentageSecundario(percentage);
-                    })
-                    .catch(() => {
-                        console.error('Error cargando videos o audio');
-                    });
-            });
-            Promise.all(totalLoadPromises)
-                .then(() => {
-                    setLoadingPercentageSecundario(10);
-                });
+        if (textOriginal) {
+            setArchillectImage(Math.floor(Math.random() * 406400) + 1);
+            setLoadingPercentageSecundario(10);
             setPoema({ titulo: textOriginal[0].titulo, versos: textOriginal[0].versos, partes: textOriginal.length, activo: 1 });
             setContadorInactividad(prevContador => ({
                 ...prevContador,
                 tiempoBase: baseTime + randomAdditionalTime()
             }));
+            setMarquesina(textOriginal[0].versos[Math.floor(Math.random() * textOriginal[0].versos.length)].split('\n')[0]);
         };
-    }, [videosBg, videosOv, miAudio, textOriginal]);
+    }, [textOriginal]);
 
     useEffect(() => {
         if (loadingPercentage + loadingPercentageSecundario === 100) {
@@ -137,13 +91,7 @@ function Componente(props) {
 
     useEffect(() => {
         if (isLoading) return;
-        setVideoBg(videosBg[Math.floor(Math.random() * videosBg.length)]);
-        setVideoOv(videosOv[Math.floor(Math.random() * videosOv.length)]);
-    }, [isLoading]);
-
-    useEffect(() => {
-        if (isLoading) return;
-        let intervalId = null;        
+        let intervalId = null;
         const modificarTexto = (registro) => {
             registro = registro.charAt(0).toUpperCase() + registro.slice(1);
             const palabras = registro.split(' ');
@@ -220,43 +168,6 @@ function Componente(props) {
     }, [isLoading]);
 
     useEffect(() => {
-        if (isLoading) return;
-        const handleKeyPress = (event) => {
-            if (event.key === "1" && !teclaPresionada) {
-                setTeclaPresionada(true);
-                teclaPresionada1();
-                setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
-            };
-            if (event.key === "3" && !teclaPresionada) {
-                setTeclaPresionada(true);
-                teclaPresionada3();
-                setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
-            };
-            if (event.key === "0" && !teclaPresionada) {
-                setIsLoading(true);
-                setTeclaPresionada(true);
-                teclaPresionada0();
-                setTransferTeclaPresionada("0");
-            };
-        };
-        const handleKeyUp = (event) => {
-            if (event.key === "1") {
-                setTeclaPresionada(false);
-                teclaLiberada1();
-            };
-            if (event.key === "3") {
-                setTeclaPresionada(false);
-            };
-        };
-        window.addEventListener("keydown", handleKeyPress);
-        window.addEventListener("keyup", handleKeyUp);
-        return () => {
-            window.removeEventListener("keydown", handleKeyPress);
-            window.removeEventListener("keyup", handleKeyUp);
-        };
-    }, [teclaPresionada, isLoading]);
-
-    useEffect(() => {
         if (reset) {
             setTimeout(() => {
                 setIsLoading(false);
@@ -268,6 +179,7 @@ function Componente(props) {
     useEffect(() => {
         if (cambioParte) {
             setPoema({ titulo: textOriginal[cambioParte - 1].titulo, versos: textOriginal[cambioParte - 1].versos, partes: textOriginal.length, activo: cambioParte });
+            setMarquesina(textOriginal[cambioParte - 1].versos[Math.floor(Math.random() * textOriginal[cambioParte - 1].versos.length)].split('\n')[0]);
             setCambioParte(null);
         };
     }, [cambioParte]);
@@ -296,66 +208,8 @@ function Componente(props) {
     };
 
     const duendeVideo = () => {
-        const desvio = Math.floor(Math.random() * 2) + 1;
-        if (desvio === 1) {
-            teclaPresionada3();
-        } else {
-            const randomTime = randomAdditionalTime();
-            teclaPresionada1();
-            setTimeout(() => {
-                teclaLiberada1();
-            }, randomTime * 1000);
-        };
+        setArchillectImage(Math.floor(Math.random() * 406400) + 1);
         setContadorInactividad({ temporizador: 0, tiempoBase: baseTime + randomAdditionalTime() });
-    };
-
-    const teclaPresionada1 = () => {
-        if (!videosOv) return;
-        let numeroAleatorio;
-        do {
-            numeroAleatorio = Math.floor(Math.random() * 8) + 1;
-        } while (mezcla === numeroAleatorio);
-        setMezcla(numeroAleatorio);
-        let randomVideoIndex;
-        do {
-            randomVideoIndex = Math.floor(Math.random() * videosOv.length);
-        } while (videosOv[randomVideoIndex] === videoOv);
-        setVideoOv(videosOv[randomVideoIndex]);
-        setOverlayVisible(true);
-        setCambios(prevCambios => ({
-            ...prevCambios,
-            producto: prevCambios.producto + 1
-        }));
-    };
-
-    const teclaLiberada1 = () => {
-        setOverlayVisible(false);
-    };
-
-    const teclaPresionada3 = () => {
-        if (!videosBg) return;
-        let randomVideoIndex;
-        do {
-            randomVideoIndex = Math.floor(Math.random() * videosBg.length);
-        } while (videosBg[randomVideoIndex] === videoBg);
-        setVideoBg(videosBg[randomVideoIndex]);
-        setCambios(prevCambios => ({
-            ...prevCambios,
-            producto: prevCambios.producto + 1
-        }));
-    };
-
-    const teclaPresionada0 = () => {
-        setCambioParte(1);
-        setReset(true);
-        setTimeout(() => {
-            setTeclaPresionada(false);
-        }, 3000);
-        setPoema(prevPoema => ({
-            ...prevPoema,
-            versos: textOriginal[0].versos
-        }));
-        setCambios({ producto: 0, dinamico: 0 });
     };
 
     const togglePlayAudio = () => {
@@ -368,17 +222,13 @@ function Componente(props) {
         };
     };
 
-    const handleOpenDialog = () => {
-        setOpenDialog(true);
-    };
-
     if (isLoading) {
         return (
             <>
                 <img className="w-full h-full object-cover absolute top-0 left-0 z-0" src={poster} />
                 <div className="flex flex-1 flex-col items-center justify-center p-24">
                     <Box className="relative inline-flex z-50">
-                        <CircularProgress variant="indeterminate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentage + loadingPercentageSecundario } size="60px" />
+                        <CircularProgress variant="indeterminate" {...props} sx={{ color: "#F5F5F5" }} value={loadingPercentage + loadingPercentageSecundario} size="60px" />
                         <Box className="absolute inset-0 flex items-center justify-center">
                             <Typography variant="caption" component="div" className="text-sm text-[#F5F5F5]">
                                 {`${Math.round(loadingPercentage + loadingPercentageSecundario)}%`}
@@ -391,97 +241,70 @@ function Componente(props) {
     };
 
     return (
-        <>
-            <div className="w-full"
-                style={{
-                    overflow: isMobile ? "auto" : "hidden",
-                    height: isMobile ? "auto" : "100vh",
-                }}
-            >
-                <video className="w-full h-full object-cover absolute top-0 left-0 z-0" src={videoBg} autoPlay loop muted />
-                {overlayVisible && (
-                    <video className="w-full h-full object-cover absolute top-0 left-0 z-1" src={videoOv} autoPlay loop muted style={{ mixBlendMode: mixBlend[mezcla], opacity: 0.5 }} />
-                )}
-                <div className="absolute w-full h-full top-0 left-0 z-10">
-                    {!isMobile && (
-                        <div className="fixed bottom-0 left-0 pb-16 pl-16">
-                            <IconButton
-                                onClick={handleOpenDialog}
-                                color="primary"
-                                sx={{
-                                    backgroundColor: '#161616',
-                                    '&:hover': {
-                                        backgroundColor: '#212121'
-                                    },
-                                    transition: 'background 0.2s ease-in-out'
-                                }}
-                            >
-                                <QuestionMark fontSize="large" sx={{ color: "white" }} />
-                            </IconButton>
-                        </div>
-                    )}
-                    <div className="fixed bottom-0 right-0 pb-16 pr-16">
-                        <IconButton
-                            onClick={togglePlayAudio}
-                            color="primary"
-                            sx={{
-                                backgroundColor: '#161616',
-                                '&:hover': {
-                                    backgroundColor: '#212121'
-                                },
-                                transition: 'background 0.2s ease-in-out'
-                            }}
-                        >
-                            {isPlaying ? <VolumeOff fontSize="large" sx={{ color: "white" }} /> : <VolumeUp fontSize="large" sx={{ color: "white" }} />}
-                        </IconButton>
-                    </div>
+        <div className="w-full"
+            style={{
+                overflow: isMobile ? "auto" : "hidden",
+                height: isMobile ? "auto" : "100vh",
+            }}
+        >
+            <img className="w-full h-full object-cover fixed top-0 left-0 z-0 animate-ken-burns" src={`https://archillect.mhsattarian.workers.dev/${archillectImage}/img`} />
+            <Marquee className="text-[100vh] text-white fixed top-[-30px] left-0 z-2" style={{ mixBlendMode: mixBlend[2] }}>
+                {marquesina}
+            </Marquee>
+            <div className="w-full h-full absolute top-0 left-0 z-1 bg-black" style={{ mixBlendMode: mixBlend[0], opacity: 0.5 }} />
+            <div className="fixed top-0 left-0 grid grid-cols-1 md:grid-cols-2 md:gap-4 md:px-56 md:py-28 h-full overflow-auto md:overflow-hidden z-15">
+                <div className="flex flex-1 flex-col p-24 w-full"
+                    style={{ justifyContent: "flex-start" }}
+                >
+                    {!isMobile && <Divider className="w-[1000px] opacity-0" />}
+                    <Typography
+                        sx={{
+                            fontSize: {
+                                xs: '70px',
+                                md: '94px'
+                            },
+                            color: "#F5F5F5",
+                            borderLeft: "5px solid grey",
+                            paddingLeft: {
+                                sm: "10px",
+                                md: "50px"
+                            },
+                            lineHeight: "62px",
+                            marginTop: "10px"
+                        }}
+                        variant='h1'
+                        ref={textRef}
+                    />
                 </div>
-                <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-4 md:px-56 md:py-28 h-full overflow-auto md:overflow-hidden">
-                    <div className="flex flex-1 flex-col p-24"
-                        style={{ justifyContent: "flex-start" }}
-                    >
-                        <Typography
-                            sx={{
-                                fontSize: {
-                                    xs: '70px',
-                                    md: '94px'
-                                },
-                                color: "#F5F5F5",
-                                borderLeft: "5px solid grey",
-                                paddingLeft: {
-                                    sm: "10px",
-                                    md: "50px"
-                                },
-                                lineHeight: "62px",
-                                marginTop: "10px"
-                            }}
-                            variant='h1'
-                            ref={textRef}
-                        />
-                    </div>
-                    <div className="w-full relative h-auto">
-                        <LineaTiempo
-                            poema={poema}
-                            setPoema={setPoema}
-                            titulo={titulo}
-                            transferTeclaPresionada={transferTeclaPresionada}
-                            setTransferTeclaPresionada={setTransferTeclaPresionada}
-                            cambios={cambios}
-                            isMobile={isMobile}
-                            setCambioParte={setCambioParte}
-                            traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
-                        />
-                    </div>
+                <div className="w-full relative h-auto">
+                    <LineaTiempo
+                        poema={poema}
+                        setPoema={setPoema}
+                        titulo={titulo}
+                        cambios={cambios}
+                        isMobile={isMobile}
+                        setCambioParte={setCambioParte}
+                        traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
+                    />
                 </div>
-                <audio ref={audioRef} src={miAudio} loop />
             </div>
-            <DialogCustom
-                openDialog={openDialog}
-                setOpenDialog={setOpenDialog}
-                traduccions={Array.from({ length: 7 }, (_, index) => TRADUCCIONS[index][lang])}
-            />
-        </>
-
+            <div className="fixed bottom-0 right-0 pb-16 pr-16">
+                <IconButton
+                    onClick={togglePlayAudio}
+                    color="primary"
+                    sx={{
+                        backgroundColor: '#161616',
+                        '&:hover': {
+                            backgroundColor: '#212121'
+                        },
+                        transition: 'background 0.2s ease-in-out'
+                    }}
+                >
+                    {isPlaying ? <VolumeOff fontSize="large" sx={{ color: "white" }} /> : <VolumeUp fontSize="large" sx={{ color: "white" }} />}
+                </IconButton>
+            </div>
+            <audio ref={audioRef} src={miAudio} loop />
+        </div>
     )
 }
 

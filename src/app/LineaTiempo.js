@@ -27,9 +27,7 @@ function LineaTiempo(props) {
     const {
         poema,
         setPoema,
-        titulo,
-        transferTeclaPresionada,
-        setTransferTeclaPresionada,
+        titulo,      
         cambios,
         isMobile,
         setCambioParte,
@@ -80,21 +78,7 @@ function LineaTiempo(props) {
             };
         };
         setSliderValue(poema.versos.length);
-    }, [itemsTimeline, transferTeclaPresionada]);
-
-    useEffect(() => {
-        if (!transferTeclaPresionada) return;
-        if (transferTeclaPresionada === "4") {
-            shuffleLetters(document.querySelector('h2'), {
-                iterations: 12,
-                fps: 60,
-            });
-            setTransferTeclaPresionada(null);
-        };
-        if (transferTeclaPresionada === "0") {
-            setTransferTeclaPresionada(null);
-        };
-    }, [transferTeclaPresionada]);
+    }, [itemsTimeline]);
 
     useEffect(() => {
         if (parrafoAumentado) {
