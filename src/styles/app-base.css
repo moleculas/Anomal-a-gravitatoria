@@ -198,3 +198,8 @@ input:-webkit-autofill:active {
 .animate-ken-burns {
     animation: kenburns 40s ease-out infinite alternate;
 }
+
+@page {
+    size: auto;
+    margin: 20mm 0mm 20mm 0mm;
+}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 export function useDynamicResources(itemValue) {
     const [textOriginal, setTextOriginal] = useState(null);
     const [titulo, setTitulo] = useState("");
+    const [tituloDialog, setTituloDialog] = useState("");
     const [subtitulo, setSubtitulo] = useState("");
     const [poster, setPoster] = useState(null);
     const [lang, setLang] = useState(null);
@@ -22,6 +23,7 @@ export function useDynamicResources(itemValue) {
                     return;
                 };
                 setTitulo(valores.titulo);
+                setTituloDialog(valores.tituloDialog);
                 setSubtitulo(valores.subtitulo);
                 setTextOriginal(valores.textOriginal);    
                 setLang(valores.lang);
@@ -50,6 +52,7 @@ export function useDynamicResources(itemValue) {
     return {
         loadingPercentage,
         titulo,
+        tituloDialog,
         subtitulo,
         textOriginal,  
         poster,

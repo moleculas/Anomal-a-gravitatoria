@@ -8,7 +8,8 @@ import {
 } from '@mui/material';
 import {
     VolumeUp,
-    VolumeOff
+    VolumeOff,
+    LibraryBooks
 } from '@mui/icons-material/';
 import Typed from 'typed.js';
 import { useLocation } from 'react-router-dom';
@@ -17,9 +18,11 @@ import Marquee from "react-fast-marquee";
 
 //carga componentes
 import LineaTiempo from './LineaTiempo';
+import DialogCustom from './DialogCustom';
 
 //importaciones acciones
 import { useDynamicResources } from './useDynamicResources';
+import useScreenOrientation from './useScreenOrientation';
 
 //constantes
 import { TRADUCCIONS } from './constantes';
@@ -43,6 +46,7 @@ function Componente(props) {
     const {
         loadingPercentage,
         titulo,
+        tituloDialog,
         subtitulo,
         textOriginal,
         poster,
@@ -51,6 +55,7 @@ function Componente(props) {
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
     const isMobile = md.mobile();
+    const isPortrait = useScreenOrientation();
     const audioRef = useRef(null);
     const textRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -64,6 +69,7 @@ function Componente(props) {
     const [typedInstance, setTypedInstance] = useState(null);
     const [archillectImage, setArchillectImage] = useState(null);
     const [marquesina, setMarquesina] = useState("");
+    const [openDialog, setOpenDialog] = useState(false);
 
     //useEffect
 
@@ -222,6 +228,10 @@ function Componente(props) {
         };
     };
 
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    };
+
     if (isLoading) {
         return (
             <>
@@ -241,70 +251,117 @@ function Componente(props) {
     };
 
     return (
-        <div className="w-full"
-            style={{
-                overflow: isMobile ? "auto" : "hidden",
-                height: isMobile ? "auto" : "100vh",
-            }}
-        >
-            <img className="w-full h-full object-cover fixed top-0 left-0 z-0 animate-ken-burns" src={`https://archillect.mhsattarian.workers.dev/${archillectImage}/img`} />
-            <Marquee className="text-[100vh] text-white fixed top-[-30px] left-0 z-2" style={{ mixBlendMode: mixBlend[2] }}>
-                {marquesina}
-            </Marquee>
-            <div className="w-full h-full absolute top-0 left-0 z-1 bg-black" style={{ mixBlendMode: mixBlend[0], opacity: 0.5 }} />
-            <div className="fixed top-0 left-0 grid grid-cols-1 md:grid-cols-2 md:gap-4 md:px-56 md:py-28 h-full overflow-auto md:overflow-hidden z-15">
-                <div className="flex flex-1 flex-col p-24 w-full"
-                    style={{ justifyContent: "flex-start" }}
+        <>
+            <div className="w-full"
+                style={{
+                    overflow: (isMobile || isPortrait) ? "auto" : "hidden",
+                    height: (isMobile || isPortrait) ? "auto" : "100vh",
+                }}
+            >
+                <img className="w-full h-full object-cover fixed top-0 left-0 z-0 animate-ken-burns" src={`https://archillect.mhsattarian.workers.dev/${archillectImage}/img`} />
+                <Marquee
+                    className="text-[100vh] text-white fixed top-[-100px] left-0 z-2"
+                    style={{ mixBlendMode: mixBlend[2] }}
+                    speed={15}
                 >
-                    {!isMobile && <Divider className="w-[1000px] opacity-0" />}
-                    <Typography
-                        sx={{
-                            fontSize: {
-                                xs: '70px',
-                                md: '94px'
-                            },
-                            color: "#F5F5F5",
-                            borderLeft: "5px solid grey",
-                            paddingLeft: {
-                                sm: "10px",
-                                md: "50px"
-                            },
-                            lineHeight: "62px",
-                            marginTop: "10px"
-                        }}
-                        variant='h1'
-                        ref={textRef}
-                    />
+                    {marquesina}
+                </Marquee>
+                <div className="w-full h-full absolute top-0 left-0 z-1 bg-black" style={{ mixBlendMode: mixBlend[0], opacity: 0.5 }} />
+                {/* <div className={`fixed top-0 left-0 grid grid-cols-1 md:grid-cols-2 md:gap-4 md:px-56 md:py-28 h-full overflow-auto md:overflow-hidden z-15`}> */}
+                <div className={`fixed top-0 left-0 grid h-full z-15 ${(isMobile || isPortrait) ? 'grid-cols-1 overflow-auto' : 'grid-cols-2 overflow-hidden gap-4 py-28 px-56'}`}>
+                    <div className="flex flex-1 flex-col p-24 w-full"
+                        style={{ justifyContent: "flex-start" }}
+                    >
+                        <Divider
+                            sx={{
+                                opacity: 0,
+                                width: (isMobile || isPortrait) ? (window.innerWidth - 50) : window.innerWidth / 2
+                            }}
+                        />
+                        <Typography
+                            sx={{
+                                fontSize: {
+                                    xs: '70px',
+                                    md: '94px'
+                                },
+                                color: "#F5F5F5",
+                                borderLeft: "5px solid grey",
+                                paddingLeft: {
+                                    sm: "10px",
+                                    md: "50px"
+                                },
+                                lineHeight: "62px",
+                                marginTop: "10px"
+                            }}
+                            variant='h1'
+                            ref={textRef}
+                        />
+                    </div>
+                    <div className="w-full relative h-auto">
+                        <LineaTiempo
+                            poema={poema}
+                            setPoema={setPoema}
+                            titulo={titulo}
+                            cambios={cambios}
+                            isMobile={isMobile}
+                            isPortrait={isPortrait}
+                            setCambioParte={setCambioParte}
+                            traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
+                        />
+                    </div>
                 </div>
-                <div className="w-full relative h-auto">
-                    <LineaTiempo
-                        poema={poema}
-                        setPoema={setPoema}
-                        titulo={titulo}
-                        cambios={cambios}
-                        isMobile={isMobile}
-                        setCambioParte={setCambioParte}
-                        traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
-                    />
+                <div className="fixed bottom-0 w-full" style={{ backgroundColor: "rgba(245, 245, 245, 0.35)" }}>
+                    <div className="flex px-16 py-8 justify-between items-center">
+                        <Marquee
+                            className="text-4xl text-[#161616]"
+                            speed={35}
+                        >
+                            {poema?.versos.join(" ").replace(/\n/g, ' ')}
+                        </Marquee>
+                        <div className="flex">
+                            <IconButton
+                                onClick={handleOpenDialog}
+                                color="primary"
+                                sx={{
+                                    backgroundColor: '#161616',
+                                    '&:hover': {
+                                        backgroundColor: '#212121'
+                                    },
+                                    transition: 'background 0.2s ease-in-out',
+                                    width: '35px',
+                                    height: '35px',
+                                    marginRight: '5px'
+                                }}
+                            >
+                                <LibraryBooks fontSize="large" sx={{ color: "white" }} />
+                            </IconButton>
+                            <IconButton
+                                onClick={togglePlayAudio}
+                                color="primary"
+                                sx={{
+                                    backgroundColor: '#161616',
+                                    '&:hover': {
+                                        backgroundColor: '#212121'
+                                    },
+                                    transition: 'background 0.2s ease-in-out',
+                                    width: '35px',
+                                    height: '35px',
+                                }}
+                            >
+                                {isPlaying ? <VolumeOff fontSize="large" sx={{ color: "white" }} /> : <VolumeUp fontSize="large" sx={{ color: "white" }} />}
+                            </IconButton>
+                        </div>
+                    </div>
                 </div>
+                <audio ref={audioRef} src={miAudio} loop />
             </div>
-            <div className="fixed bottom-0 right-0 pb-16 pr-16">
-                <IconButton
-                    onClick={togglePlayAudio}
-                    color="primary"
-                    sx={{
-                        backgroundColor: '#161616',
-                        '&:hover': {
-                            backgroundColor: '#212121'
-                        },
-                        transition: 'background 0.2s ease-in-out'
-                    }}
-                >
-                    {isPlaying ? <VolumeOff fontSize="large" sx={{ color: "white" }} /> : <VolumeUp fontSize="large" sx={{ color: "white" }} />}
-                </IconButton>
-            </div>
-            <audio ref={audioRef} src={miAudio} loop />
-        </div>
+            <DialogCustom
+                openDialog={openDialog}
+                setOpenDialog={setOpenDialog}
+                textOriginal={textOriginal}
+                tituloDialog={tituloDialog}
+            />
+        </>
     )
 }
 
