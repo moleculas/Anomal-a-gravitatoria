@@ -77,7 +77,7 @@ function LineaTiempo(props) {
         };
         const intervalId = setInterval(resetItemsTimeline, 33000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [poema]);
 
     //funciones
 
@@ -194,7 +194,7 @@ function LineaTiempo(props) {
         return iconButtons;
     };
 
-    const cambioParte = (parte) => {
+    const cambioParte = (parte) => {       
         setPoema(null);
         setCambioParte(parte);
     };

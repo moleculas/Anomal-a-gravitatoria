@@ -9,6 +9,7 @@ export function useDynamicResources(itemValue) {
     const [lang, setLang] = useState(null);
     const [loadingPercentage, setLoadingPercentage] = useState(0);
     const [miAudio, setMiAudio] = useState(null);
+    const [varios, setVarios] = useState(null);
 
     //useEffect
 
@@ -27,7 +28,8 @@ export function useDynamicResources(itemValue) {
                 setSubtitulo(valores.subtitulo);
                 setTextOriginal(valores.textOriginal);    
                 setLang(valores.lang);
-                setMiAudio(valores.miAudio);    
+                setMiAudio(valores.miAudio); 
+                setVarios(valores.varios);     
                 const proporcionCarga = 90;
                 const fetchBlobAndCreateObjectURL = async (url) => {
                     const response = await fetch(url);
@@ -57,6 +59,7 @@ export function useDynamicResources(itemValue) {
         textOriginal,  
         poster,
         lang,
-        miAudio
+        miAudio,
+        varios
     };
 }

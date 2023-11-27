@@ -20,7 +20,7 @@ export default function DialogCustom(props) {
     openDialog,
     setOpenDialog,
     textOriginal,
-    tituloDialog
+    tituloDialog,
   } = props;
   const [scroll, setScroll] = useState('paper');
   const componentRef = useRef();
@@ -34,6 +34,10 @@ export default function DialogCustom(props) {
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
+
+  if (textOriginal.length === 1 && textOriginal[0] === undefined) {
+    return null
+  };
 
   return (
     <Dialog
@@ -68,7 +72,7 @@ export default function DialogCustom(props) {
               <div key={`or-${index}`} >
                 <Typography
                   key={`part-${index}`}
-                  className={`px-8 print:px-0 text-2xl text-[rgba(0, 0, 0, 0.87)] mb-32 bg-[rgba(0,0,0,.2)] print:bg-transparent ${index !== 0 ? 'mt-32' : ''}`}
+                  className={`px-8 print:px-0 text-2xl text-[rgba(0, 0, 0, 0.87)] mb-32 bg-[rgba(0,0,0,.2)] print:bg-transparent ${index !== 0 ? 'mt-32' : 'mt-16'}`}
                 >
                   {part.titulo}
                 </Typography>

@@ -51,7 +51,8 @@ function Componente(props) {
         textOriginal,
         poster,
         lang,
-        miAudio
+        miAudio,
+        varios
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
     const isMobile = md.mobile();
@@ -257,7 +258,7 @@ function Componente(props) {
                     overflow: (isMobile || isPortrait) ? "auto" : "hidden",
                     height: (isMobile || isPortrait) ? "auto" : "100vh",
                 }}
-            >
+            >               
                 <img className="w-full h-full object-cover fixed top-0 left-0 z-0 animate-ken-burns" src={`https://archillect.mhsattarian.workers.dev/${archillectImage}/img`} />
                 <Marquee
                     className="text-[100vh] text-white fixed top-[-100px] left-0 z-2"
@@ -358,7 +359,7 @@ function Componente(props) {
             <DialogCustom
                 openDialog={openDialog}
                 setOpenDialog={setOpenDialog}
-                textOriginal={textOriginal}
+                textOriginal={varios ? [textOriginal[poema?.activo - 1]] : textOriginal}
                 tituloDialog={tituloDialog}
             />
         </>
