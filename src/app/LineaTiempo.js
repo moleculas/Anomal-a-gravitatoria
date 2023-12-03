@@ -14,10 +14,10 @@ import {
     Paper,
     IconButton
 } from '@mui/material/';
-import { 
+import {
     WhatsApp,
     Cached
- } from '@mui/icons-material/';
+} from '@mui/icons-material/';
 import useDynamicRefs from 'use-dynamic-refs';
 import ReactWhatsapp from 'react-whatsapp';
 
@@ -35,7 +35,6 @@ function LineaTiempo(props) {
         traduccions,
         autor
     } = props;
-    const text2Ref = useRef(null);
     const container = {
         show: {
             transition: {
@@ -220,14 +219,14 @@ function LineaTiempo(props) {
         itemsTimeline && (
             <>
                 <motion.div
-                    className="w-full p-24 md:p-36"
+                    className="w-full py-36 pl-0 pr-0 md:pl-36 md:pr-36"
                     variants={container}
                     initial="hidden"
                     animate="show"
                 >
-                    <div className="flex flex-col sm:flex-row mb-24 justify-between">
+                    <div className="flex flex-col sm:flex-row pl-24 md:pl-0 mb-24 justify-between">
                         <div className="flex">
-                            <IconButton                               
+                            <IconButton
                                 onMouseUp={() => setItemsTimeline(null)}
                                 sx={{
                                     backgroundColor: '#F5F5F5',
@@ -239,24 +238,29 @@ function LineaTiempo(props) {
                                         opacity: 0.8,
                                     },
                                     transition: 'background 0.2s ease-in-out',
-                                    color: "#161616",                               
+                                    color: "#161616",
                                     width: '35px',
                                     height: '35px',
                                     marginRight: "15px",
                                     marginTop: "5px"
-                                }}                               
+                                }}
                             >
                                 <Cached fontSize="large" />
                             </IconButton>
                             <div>
-                                <Typography variant="h2" ref={text2Ref} className="text-24 text-[#F5F5F5] uppercase font-bold">
-                                    {`${traduccions[0]}: [ ${titulo} - ${generarStringAlfanumerico()} ]`}
-                                </Typography>
+                                <div className="flex flex-col sm:flex-row sm:gap-8">
+                                    <Typography variant="h2" className="text-24 text-[#F5F5F5] uppercase font-bold">
+                                        {`${traduccions[0]}: `}
+                                    </Typography>
+                                    <Typography variant="h2" className="text-24 text-[#F5F5F5] uppercase font-bold">
+                                        {`[ ${titulo} - ${generarStringAlfanumerico()} ]`}
+                                    </Typography>
+                                </div>
                                 <Typography className="mt-2 text-12 text-[#F5F5F5] uppercase font-semibold tracking-widest">{`${traduccions[1]} ${cambios.producto} - ${traduccions[2]} ${cambios.dinamico}`}</Typography>
                             </div>
                         </div>
                         {Number(poema.partes) > 1 && (
-                            <div className="flex flex-row gap-8">
+                            <div className="flex flex-row gap-8 mt-16 sm:mt-0">
                                 <Botonera
                                     poema={poema}
                                     cambioParte={cambioParte}
