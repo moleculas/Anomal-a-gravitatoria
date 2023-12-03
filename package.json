@@ -36,6 +36,7 @@
         "react-to-print": "^2.14.15",
         "react-transition-group": "4.4.5",
         "react-virtuoso": "4.3.11",
+        "react-whatsapp": "^0.3.0",
         "shuffle-letters": "^1.1.0",
         "styled-components": "5.3.11",
         "stylis": "4.3.0",

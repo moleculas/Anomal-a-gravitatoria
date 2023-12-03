@@ -52,7 +52,8 @@ function Componente(props) {
         poster,
         lang,
         miAudio,
-        varios
+        varios,
+        autor
     } = useDynamicResources(itemValue);
     const md = new MobileDetect(window.navigator.userAgent);
     const isMobile = md.mobile();
@@ -308,6 +309,7 @@ function Componente(props) {
                             isPortrait={isPortrait}
                             setCambioParte={setCambioParte}
                             traduccions={[TRADUCCIONS[7][lang], TRADUCCIONS[8][lang], TRADUCCIONS[9][lang]]}
+                            autor={autor}
                         />
                     </div>
                 </div>

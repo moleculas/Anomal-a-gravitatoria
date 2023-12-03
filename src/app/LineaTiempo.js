@@ -14,10 +14,14 @@ import {
     Paper,
     IconButton
 } from '@mui/material/';
+import { 
+    WhatsApp,
+    Cached
+ } from '@mui/icons-material/';
 import useDynamicRefs from 'use-dynamic-refs';
+import ReactWhatsapp from 'react-whatsapp';
 
 //importación acciones
-import useWindowHeight from './useWindowHeight';
 
 function LineaTiempo(props) {
     const {
@@ -28,10 +32,10 @@ function LineaTiempo(props) {
         isMobile,
         isPortrait,
         setCambioParte,
-        traduccions
+        traduccions,
+        autor
     } = props;
     const text2Ref = useRef(null);
-    const windowHeight = useWindowHeight();
     const container = {
         show: {
             transition: {
@@ -111,7 +115,7 @@ function LineaTiempo(props) {
                     variant="body2"
                     className="text-2xl xl:text-3xl text-[#F5F5F5]"
                 >
-                    {verso}
+                    {index === 0 ? verso.charAt(0).toUpperCase() + verso.slice(1) : verso}
                 </Typography>
             )
         });
@@ -133,19 +137,21 @@ function LineaTiempo(props) {
                 return (
                     <TimelineItem key={`nodo-${index}`}>
                         <TimelineSeparator>
-                            <TimelineDot
-                                className="w-32 h-32 p-0 mt-0 flex items-center justify-center"
-                                sx={{
-                                    backgroundColor: "#161616",
-                                    color: "#F5F5F5"
-                                }}
-                            >
-                                {numTimeline[0] + index}
-                            </TimelineDot>
+                            <ReactWhatsapp number="" message={retornaItemFormateadoWA(item)} >
+                                <TimelineDot
+                                    className="w-32 h-32 p-0 mt-0 flex items-center justify-center"
+                                    sx={{
+                                        backgroundColor: "#161616",
+                                        color: "#F5F5F5"
+                                    }}
+                                >
+                                    <WhatsApp fontSize="large" sx={{ color: "white" }} />
+                                </TimelineDot>
+                            </ReactWhatsapp>
                             {!last && <TimelineConnector />}
                         </TimelineSeparator>
                         <TimelineContent className="flex flex-col items-start pt-0 pb-48">
-                            <Typography className="text-sm text-[#F5F5F5]">{poema.titulo}</Typography>
+                            <Typography className="text-sm text-[#F5F5F5]">{`${numTimeline[0] + index} - ${poema.titulo}`}</Typography>
                             <Box className="mt-16 py-16 px-20 rounded-lg border border-[rgba(255,255,255,0.25)] w-full"
                                 ref={setRef(`ref-${index}`)}
                                 sx={{
@@ -162,6 +168,13 @@ function LineaTiempo(props) {
             })}
         </Timeline>
     );
+
+    const retornaItemFormateadoWA = (item) => {
+        const itemCapitalizado = item.charAt(0).toUpperCase() + item.slice(1);
+        const resultado = itemCapitalizado.replace(/^(.*)$/gm, '_$1_');
+        const resultadoCompleto = `${resultado}\n\n${poema.titulo} - *${autor}*`;
+        return resultadoCompleto;
+    };
 
     const Botonera = ({ poema, cambioParte }) => {
         const iconButtons = [];
@@ -194,7 +207,7 @@ function LineaTiempo(props) {
         return iconButtons;
     };
 
-    const cambioParte = (parte) => {       
+    const cambioParte = (parte) => {
         setPoema(null);
         setCambioParte(parte);
     };
@@ -211,13 +224,36 @@ function LineaTiempo(props) {
                     variants={container}
                     initial="hidden"
                     animate="show"
-                >                   
+                >
                     <div className="flex flex-col sm:flex-row mb-24 justify-between">
-                        <div>
-                            <Typography variant="h2" ref={text2Ref} className="text-24 text-[#F5F5F5] uppercase font-bold">
-                                {`${traduccions[0]}: [ ${titulo} - ${generarStringAlfanumerico()} ]`}
-                            </Typography>
-                            <Typography className="mt-2 text-12 text-[#F5F5F5] uppercase font-semibold tracking-widest">{`${traduccions[1]} ${cambios.producto} - ${traduccions[2]} ${cambios.dinamico}`}</Typography>
+                        <div className="flex">
+                            <IconButton                               
+                                onMouseUp={() => setItemsTimeline(null)}
+                                sx={{
+                                    backgroundColor: '#F5F5F5',
+                                    '&:hover': {
+                                        backgroundColor: '#FFFFFF',
+                                    },
+                                    '&:disabled': {
+                                        backgroundColor: '#FFFFFF',
+                                        opacity: 0.8,
+                                    },
+                                    transition: 'background 0.2s ease-in-out',
+                                    color: "#161616",                               
+                                    width: '35px',
+                                    height: '35px',
+                                    marginRight: "15px",
+                                    marginTop: "5px"
+                                }}                               
+                            >
+                                <Cached fontSize="large" />
+                            </IconButton>
+                            <div>
+                                <Typography variant="h2" ref={text2Ref} className="text-24 text-[#F5F5F5] uppercase font-bold">
+                                    {`${traduccions[0]}: [ ${titulo} - ${generarStringAlfanumerico()} ]`}
+                                </Typography>
+                                <Typography className="mt-2 text-12 text-[#F5F5F5] uppercase font-semibold tracking-widest">{`${traduccions[1]} ${cambios.producto} - ${traduccions[2]} ${cambios.dinamico}`}</Typography>
+                            </div>
                         </div>
                         {Number(poema.partes) > 1 && (
                             <div className="flex flex-row gap-8">
