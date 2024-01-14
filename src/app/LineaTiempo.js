@@ -98,7 +98,7 @@ function LineaTiempo(props) {
     const generarStringAlfanumerico = () => {
         const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let resultado = '';
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 2; i++) {
             const indice = Math.floor(Math.random() * caracteres.length);
             resultado += caracteres.charAt(indice);
         }
@@ -168,7 +168,7 @@ function LineaTiempo(props) {
         </Timeline>
     );
 
-    const retornaItemFormateadoWA = (item) => {
+    const retornaItemFormateadoWA = (item) => {     
         const itemCapitalizado = item.charAt(0).toUpperCase() + item.slice(1);
         const resultado = itemCapitalizado.replace(/^(.*)$/gm, '_$1_');
         const resultadoCompleto = `${resultado}\n\n${poema.titulo} - *${autor}*`;
@@ -248,11 +248,11 @@ function LineaTiempo(props) {
                                 <Cached fontSize="large" />
                             </IconButton>
                             <div>
-                                <div className="flex flex-col sm:flex-row sm:gap-8">
+                                <div className="flex flex-col lg:flex-row sm:gap-8">
                                     <Typography variant="h2" className="text-24 text-[#F5F5F5] uppercase font-bold">
                                         {`${traduccions[0]}: `}
                                     </Typography>
-                                    <Typography variant="h2" className="text-24 text-[#F5F5F5] uppercase font-bold">
+                                    <Typography className="text-lg text-[#F5F5F5] uppercase font-bold lg:mt-4">
                                         {`[ ${titulo} - ${generarStringAlfanumerico()} ]`}
                                     </Typography>
                                 </div>
